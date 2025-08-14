@@ -27,7 +27,7 @@ const VideoGenerator: React.FC = () => {
     const [video, setVideo] = useState<VideoResult | null>(null);
     const [operation, setOperation] = useState<any | null>(null);
 
-    const { user, deductCredits, setIsAuthModalOpen } = useContext(UserContext);
+    const { user, deductCredits, setIsAuthModalOpen } = useUser();
     const { showToast } = useToast();
 
     const messageIntervalRef = useRef<number | null>(null);
