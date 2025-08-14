@@ -1,0 +1,5 @@
+{
+  "name": "Lotaya AI",
+  "description": "An AI-powered design assistant to generate logos, social media content, and creative ideas, inspired by Lotaya AI. This application leverages the Gemini API for content and image generation.",
+  "requestFramePermissions": []
+}
