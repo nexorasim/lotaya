@@ -5,7 +5,7 @@ import * as geminiService from '../services/geminiService';
 import Spinner from './common/Spinner';
 import { Wand2, Facebook, Youtube, Linkedin, Twitter, Twitch, Clipboard, Instagram } from 'lucide-react';
 import DesignCanvas from './common/DesignCanvas';
-import { UserContext } from '../contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
 import { useToast } from '../contexts/ToastContext';
 
 const platformIcons: { [key: string]: React.ReactNode } = {
