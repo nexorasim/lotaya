@@ -2,7 +2,7 @@ import React, { useState, useCallback, useContext, useEffect, useRef } from 'rea
 import * as geminiService from '../services/geminiService';
 import { BrandKit, Logo } from '../types';
 import { CREDITS_COST } from '../constants';
-import { UserContext } from '../contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
 import { useToast } from '../contexts/ToastContext';
 import Spinner from './common/Spinner';
 import { Sparkles, Palette, Type, Quote, Download } from 'lucide-react';
