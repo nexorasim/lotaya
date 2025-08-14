@@ -13,76 +13,68 @@ const ParticleBackground: React.FC = () => {
 
         let animationFrameId: number;
         let particles: Particle[];
-        let tick = 0;
-        
-        const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
+        // Configuration for a more dynamic and immersive "3D" starfield effect
         const options = {
             particleColor: "rgba(147, 197, 253, 0.7)",
-            lineColor: "rgba(167, 139, 250, 0.15)",
-            particleAmount: 150,
-            defaultRadius: 1.5,
-            variantRadius: 1,
-            defaultSpeed: 0.2,
+            particleAmount: 600, // Increased for a denser feel
+            defaultSpeed: 0.15,  // Faster for a more dynamic feel
             variantSpeed: 0.2,
-            linkRadius: 250,
-            parallaxFactor: 25,
+            defaultRadius: 0.5,  // Smaller base size for finer stars
+            variantRadius: 1.5,
+            fov: 500,          // Wider Field of View for a greater sense of depth
+            centerZ: 1500,       // Deeper field for more parallax
         };
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
+        
+        // Particle class represents a star in 3D space.
+        // We simulate 3D by projecting x,y,z coordinates to a 2D canvas.
         class Particle {
             x: number;
             y: number;
             z: number;
-            displayX: number;
-            displayY: number;
             radius: number;
             speed: number;
-            directionAngle: number;
-            vector: { x: number; y: number };
-            pulseOffset: number;
 
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.z = Math.random() + 0.1; // z from 0.1 to 1.1
-                this.displayX = this.x;
-                this.displayY = this.y;
-                this.radius = (options.defaultRadius + Math.random() * options.variantRadius) * this.z;
-                this.speed = (options.defaultSpeed + Math.random() * options.variantSpeed) * this.z;
-                this.directionAngle = Math.floor(Math.random() * 360);
-                this.vector = {
-                    x: Math.cos(this.directionAngle) * this.speed,
-                    y: Math.sin(this.directionAngle) * this.speed,
-                };
-                this.pulseOffset = Math.random() * 100;
+            constructor(x: number = 0, y: number = 0, z: number = 0) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.radius = 0;
+                this.speed = 0;
+                this.reset();
             }
 
-            draw(context: CanvasRenderingContext2D, currentTick: number) {
+            reset() {
+                // Position particles randomly in a 3D volume, slightly outside view for better entry
+                this.x = (Math.random() - 0.5) * canvas.width * 2.5;
+                this.y = (Math.random() - 0.5) * canvas.height * 2.5;
+                this.z = Math.random() * options.centerZ;
+                this.radius = options.defaultRadius + Math.random() * options.variantRadius;
+                this.speed = options.defaultSpeed + Math.random() * options.variantSpeed;
+            }
+            
+            // Project 3D particle to 2D screen coords and draw
+            draw(context: CanvasRenderingContext2D, screenX: number, screenY: number, scale: number) {
                 context.beginPath();
-                context.arc(this.displayX, this.displayY, this.radius, 0, Math.PI * 2);
+                context.arc(screenX, screenY, this.radius * scale, 0, Math.PI * 2);
                 context.closePath();
-                context.fillStyle = options.particleColor;
-                const pulse = (Math.sin((currentTick + this.pulseOffset) * 0.02) + 1) / 2; // Varies between 0 and 1
-                context.globalAlpha = this.z * (0.3 + pulse * 0.5); // Pulse between 0.3 and 0.8 opacity, scaled by depth
+                // Opacity fades based on distance (scale)
+                const opacity = Math.max(0, Math.min(1, scale * 1.5));
+                context.fillStyle = `rgba(147, 197, 253, ${opacity})`;
                 context.fill();
             }
 
             update() {
-                this.border();
-                this.x += this.vector.x;
-                this.y += this.vector.y;
-            }
-
-            border() {
-                if (this.x >= canvas.width || this.x <= 0) this.vector.x *= -1;
-                if (this.y >= canvas.height || this.y <= 0) this.vector.y *= -1;
-                if (this.x > canvas.width) this.x = canvas.width;
-                if (this.y > canvas.height) this.y = canvas.height;
-                if (this.x < 0) this.x = 0;
-                if (this.y < 0) this.y = 0;
+                // Move particle towards the viewer
+                this.z -= this.speed;
+                // If particle is behind the viewer, reset it to the back
+                if (this.z < 1) {
+                    this.reset();
+                    this.z = options.centerZ; // Place it at the far end for a continuous loop
+                }
             }
         }
 
@@ -93,69 +85,44 @@ const ParticleBackground: React.FC = () => {
             }
         }
 
-        function linkParticles(context: CanvasRenderingContext2D) {
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const distance = Math.hypot(particles[i].displayX - particles[j].displayX, particles[i].displayY - particles[j].displayY);
-                    if (distance < options.linkRadius) {
-                        const opacity = 1 - (distance / options.linkRadius);
-                        context.globalAlpha = opacity;
-                        context.beginPath();
-                        context.moveTo(particles[i].displayX, particles[i].displayY);
-                        context.lineTo(particles[j].displayX, particles[j].displayY);
-                        context.strokeStyle = options.lineColor;
-                        context.lineWidth = 0.5;
-                        context.stroke();
-                    }
-                }
-            }
-            context.globalAlpha = 1;
-        }
-
         function animate() {
-            tick++;
-            ctx!.clearRect(0, 0, canvas.width, canvas.height);
-            const mouseOffsetX = (mouse.x - canvas.width / 2) / (canvas.width / 2);
-            const mouseOffsetY = (mouse.y - canvas.height / 2) / (canvas.height / 2);
+            // Center the coordinate system for the projection
+            ctx!.save();
+            ctx!.translate(canvas.width / 2, canvas.height / 2);
+            ctx!.clearRect(-canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
 
             particles.forEach(p => {
                 p.update();
-                p.displayX = p.x + mouseOffsetX * p.z * options.parallaxFactor;
-                p.displayY = p.y + mouseOffsetY * p.z * options.parallaxFactor;
-                p.draw(ctx!, tick);
+                
+                // Perspective projection formula: scale decreases with distance (z)
+                const scale = options.fov / (options.fov + p.z);
+                const screenX = p.x * scale;
+                const screenY = p.y * scale;
+
+                // Draw if particle is within the screen bounds
+                if(Math.abs(screenX) < canvas.width / 2 && Math.abs(screenY) < canvas.height / 2) {
+                   p.draw(ctx!, screenX, screenY, scale);
+                }
             });
 
-            linkParticles(ctx!);
+            ctx!.restore();
             animationFrameId = requestAnimationFrame(animate);
         }
         
-        const handleMouseMove = (e: MouseEvent) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        };
-        
-        const handleMouseOut = () => {
-            mouse.x = canvas.width / 2;
-            mouse.y = canvas.height / 2;
-        }
-
         const handleResize = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            // Re-initialize particles on resize to fit new screen dimensions
             setupParticles();
         };
         
         window.addEventListener('resize', handleResize);
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseout', handleMouseOut);
         
         setupParticles();
         animate();
 
         return () => {
             window.removeEventListener('resize', handleResize);
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseout', handleMouseOut);
             cancelAnimationFrame(animationFrameId);
         };
 
@@ -164,7 +131,8 @@ const ParticleBackground: React.FC = () => {
     return (
         <canvas
             ref={canvasRef}
-            className="fixed top-0 left-0 w-full h-full -z-10"
+            className="fixed top-0 left-0 w-full h-full -z-10 bg-gray-950"
+            aria-hidden="true"
         />
     );
 };
