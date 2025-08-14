@@ -4,7 +4,7 @@ import { BUSINESS_TEMPLATES, BUSINESS_TEMPLATES_DATA, CREDITS_COST } from '../co
 import * as geminiService from '../services/geminiService';
 import Spinner from './common/Spinner';
 import { Lightbulb, Layers } from 'lucide-react';
-import { UserContext } from '../contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
 import { useToast } from '../contexts/ToastContext';
 
 const BusinessTemplates: React.FC = () => {
