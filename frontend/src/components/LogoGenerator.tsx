@@ -4,7 +4,7 @@ import { FONT_STYLES, INDUSTRY_CATEGORIES, CREDITS_COST } from '../constants';
 import * as geminiService from '../services/geminiService';
 import Spinner from './common/Spinner';
 import { Sparkles } from 'lucide-react';
-import { UserContext } from '../contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
 import { useToast } from '../contexts/ToastContext';
 
 const LOGO_LOADING_MESSAGES = [
