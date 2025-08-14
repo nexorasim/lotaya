@@ -14,7 +14,7 @@ const BusinessTemplates: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, deductCredits, setIsAuthModalOpen } = useContext(UserContext);
+  const { user, deductCredits, setIsAuthModalOpen } = useUser();
   const { showToast } = useToast();
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
