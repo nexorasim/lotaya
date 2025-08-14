@@ -24,7 +24,7 @@ const BrandKitGenerator: React.FC = () => {
     const [brandKit, setBrandKit] = useState<BrandKit | null>(null);
     const [loadingMessage, setLoadingMessage] = useState(BRAND_KIT_LOADING_MESSAGES[0]);
 
-    const { user, deductCredits, setIsAuthModalOpen } = useContext(UserContext);
+    const { user, deductCredits, setIsAuthModalOpen } = useUser();
     const { showToast } = useToast();
     const messageIntervalRef = useRef<number | null>(null);
 
