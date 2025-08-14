@@ -38,7 +38,7 @@ const SocialMediaAssistant: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState(SOCIAL_LOADING_MESSAGES[0]);
   const messageIntervalRef = useRef<number | null>(null);
 
-  const { user, deductCredits, setIsAuthModalOpen } = useContext(UserContext);
+  const { user, deductCredits, setIsAuthModalOpen } = useUser();
   const { showToast } = useToast();
 
   useEffect(() => {
