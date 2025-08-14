@@ -3,7 +3,7 @@ import * as geminiService from '../services/geminiService';
 import { VideoResult } from '../types';
 import Spinner from './common/Spinner';
 import { Clapperboard, Film, UploadCloud, X, Download } from 'lucide-react';
-import { UserContext } from '../contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
 import { CREDITS_COST } from '../constants';
 import { useToast } from '../contexts/ToastContext';
 
