@@ -26,6 +26,7 @@ const Footer: React.FC = () => {
                 <div>
                     <h3 className="font-bold text-white mb-4">Quick Links</h3>
                     <ul className="space-y-2 text-sm">
+                        <li><a href="#brand-kit-generator" className="hover:text-white transition-colors">Brand Kit Generator</a></li>
                         <li><a href="#logo-generator" className="hover:text-white transition-colors">Logo Generator</a></li>
                         <li><a href="#social-media" className="hover:text-white transition-colors">Social Media Tools</a></li>
                         <li><a href="#business-templates" className="hover:text-white transition-colors">Business Templates</a></li>

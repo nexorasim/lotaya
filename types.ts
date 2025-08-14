@@ -27,6 +27,36 @@ export interface VideoResult {
     blobUrl: string;
 }
 
+export interface BrandKit {
+  brandName: string;
+  missionStatement: string;
+  colorPalette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
+  fontPairings: {
+    heading: string;
+    body: string;
+  };
+  logos: Logo[];
+}
+
+export interface BrandIdentityData {
+  brandName: string;
+  missionStatement: string;
+  colorPalette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
+  fontPairings: {
+    heading: string;
+    body: string;
+  };
+  logoPrompt: string;
+}
+
 export type IndustryCategory = 'Construction' | 'Cool' | 'DJ' | 'Restaurant' | 'Letter' | 'Real Estate' | 'Circle' | 'Fashion' | 'Cartoon' | 'Travel' | 'Cafe' | 'Eagle' | 'Podcast' | 'Bakery' | 'Text' | 'Icon' | 'Word' | 'Team' | 'App' | 'Barber' | 'Font' | 'Web' | 'Pizza' | 'Shop' | 'Simple' | 'Symbol' | 'Beauty' | 'Coffee' | 'Doctor' | 'Gym' | 'Lion' | 'Music';
 
 export interface BusinessTemplate {

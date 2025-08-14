@@ -11,6 +11,7 @@ import AuthModal from './components/common/AuthModal';
 import CreditsModal from './components/common/CreditsModal';
 import { UserContext } from './contexts/UserContext';
 import ToastContainer from './components/common/ToastContainer';
+import BrandKitGenerator from './components/BrandKitGenerator';
 
 const App: React.FC = () => {
   const { isAuthModalOpen, setIsAuthModalOpen, isCreditsModalOpen, setIsCreditsModalOpen } = useContext(UserContext);
@@ -65,6 +66,17 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* Brand Kit Generator Section */}
+          <section id="brand-kit-generator" className="py-16 md:py-20">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">AI Brand Kit Generator</h2>
+              <p className="mt-4 max-w-2xl mx-auto text-gray-400">
+                Instantly generate a complete brand identity. From logo and colors to fonts and a mission statement, all from a single idea.
+              </p>
+            </div>
+            <BrandKitGenerator />
           </section>
 
           {/* Logo Generator Section */}

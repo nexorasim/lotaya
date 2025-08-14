@@ -1,6 +1,7 @@
 
+
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-import { TemplateIdea } from '../types';
+import { TemplateIdea, BrandIdentityData } from '../types';
 
 if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable is not set.");
@@ -126,6 +127,63 @@ export const generateTemplateIdea = async (description: string, templateType: st
     } catch (error) {
         console.error("Error generating template idea:", error);
         throw new Error("Failed to generate the template idea.");
+    }
+};
+
+export const generateBrandIdentity = async (description: string): Promise<BrandIdentityData> => {
+    const prompt = `Based on the following brand description, generate a complete brand identity kit.
+    Brand Description: "${description}"
+
+    Your task is to generate:
+    1. A short, catchy Brand Name.
+    2. A compelling one-sentence Mission Statement.
+    3. A color palette with primary, secondary, and accent hex codes. The colors should be harmonious and reflect the brand's essence.
+    4. Font pairings for a heading and body text. Suggest real, accessible font names (e.g., from Google Fonts).
+    5. A concise, descriptive prompt for an AI image generator to create a logo. The prompt should specify a modern, vector logo, on a clean background, and capture the brand's core idea. Do not include the brand name in quotes in the prompt. For example, instead of 'Logo for "Innovate Inc."', say 'Logo for Innovate Inc.'.
+
+    Return the result as a JSON object.`;
+
+    try {
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        brandName: { type: Type.STRING, description: "The generated brand name." },
+                        missionStatement: { type: Type.STRING, description: "The generated mission statement." },
+                        colorPalette: {
+                            type: Type.OBJECT,
+                            properties: {
+                                primary: { type: Type.STRING, description: "Primary hex color code." },
+                                secondary: { type: Type.STRING, description: "Secondary hex color code." },
+                                accent: { type: Type.STRING, description: "Accent hex color code." }
+                            },
+                            required: ["primary", "secondary", "accent"]
+                        },
+                        fontPairings: {
+                            type: Type.OBJECT,
+                            properties: {
+                                heading: { type: Type.STRING, description: "Name of the font for headings." },
+                                body: { type: Type.STRING, description: "Name of the font for body text." }
+                            },
+                            required: ["heading", "body"]
+                        },
+                        logoPrompt: { type: Type.STRING, description: "A prompt for an AI image generator to create a logo."}
+                    },
+                    required: ["brandName", "missionStatement", "colorPalette", "fontPairings", "logoPrompt"]
+                }
+            }
+        });
+
+        const jsonText = response.text;
+        return JSON.parse(jsonText) as BrandIdentityData;
+
+    } catch (error) {
+        console.error("Error generating brand identity:", error);
+        throw new Error("Failed to generate the brand identity kit.");
     }
 };
 
