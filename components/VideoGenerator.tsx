@@ -60,11 +60,11 @@ const VideoGenerator: React.FC = () => {
                     const downloadLink = updatedOp.response?.generatedVideos?.[0]?.video?.uri;
                     if (downloadLink) {
                          setLoadingMessage("Downloading your video...");
+                         await deductCredits(CREDITS_COST.VIDEO_GENERATION, 'Video Generation');
                          const videoBlob = await geminiService.fetchVideo(downloadLink);
                          const blobUrl = URL.createObjectURL(videoBlob);
                          setVideo({ uri: downloadLink, blobUrl });
                          setLoadingMessage("");
-                         deductCredits(CREDITS_COST.VIDEO_GENERATION);
                     } else {
                         throw new Error("Video generation finished but no download link was found.");
                     }

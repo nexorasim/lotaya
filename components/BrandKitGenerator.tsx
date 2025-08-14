@@ -82,21 +82,23 @@ const BrandKitGenerator: React.FC = () => {
         setLoadingMessage(BRAND_KIT_LOADING_MESSAGES[0]);
 
         try {
-            // Step 1: Generate textual brand identity and logo prompt
+            // Step 1: Deduct credits first
+            await deductCredits(CREDITS_COST.BRAND_KIT_GENERATION, 'Brand Kit Generation');
+            
+            // Step 2: Generate textual brand identity and logo prompt
             const identityData = await geminiService.generateBrandIdentity(description);
             
             setLoadingMessage("Generating logo concepts...");
 
-            // Step 2: Generate logos using the prompt from step 1
+            // Step 3: Generate logos using the prompt from step 2
             const imageBytesArray = await geminiService.generateLogos(identityData.logoPrompt);
             const generatedLogos: Logo[] = imageBytesArray.map((bytes, index) => ({
                 id: `logo-${Date.now()}-${index}`,
                 base64: bytes,
             }));
 
-            // Step 3: Combine results and set state
+            // Step 4: Combine results and set state
             setBrandKit({ ...identityData, logos: generatedLogos });
-            deductCredits(CREDITS_COST.BRAND_KIT_GENERATION);
             showToast('Your brand kit has been generated!', 'success');
 
         } catch (err) {

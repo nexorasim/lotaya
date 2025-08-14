@@ -12,9 +12,18 @@ import CreditsModal from './components/common/CreditsModal';
 import { UserContext } from './contexts/UserContext';
 import ToastContainer from './components/common/ToastContainer';
 import BrandKitGenerator from './components/BrandKitGenerator';
+import Spinner from './components/common/Spinner';
 
 const App: React.FC = () => {
-  const { isAuthModalOpen, setIsAuthModalOpen, isCreditsModalOpen, setIsCreditsModalOpen } = useContext(UserContext);
+  const { isAuthModalOpen, setIsAuthModalOpen, isCreditsModalOpen, setIsCreditsModalOpen, isLoading } = useContext(UserContext);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full bg-gray-950 flex items-center justify-center">
+        <Spinner size="h-16 w-16" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full text-white bg-gray-950">

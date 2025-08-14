@@ -87,3 +87,18 @@ export interface Toast {
   message: string;
   type: ToastType;
 }
+
+export interface UserContextType {
+  user: User | null;
+  isLoading: boolean;
+  transactions: Transaction[];
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  deductCredits: (amount: number, description: string) => Promise<void>;
+  topUpCredits: (amount: number) => Promise<void>;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isCreditsModalOpen: boolean;
+  setIsCreditsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}

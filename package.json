@@ -1,22 +1,22 @@
 {
-  "name": "lotaya-ai",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "lotaya-ai-server",
+  "version": "1.0.0",
+  "description": "Backend and frontend server for Lotaya AI.",
+  "main": "server.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "esbuild index.tsx --bundle --outfile=dist/index.js --jsx=automatic --loader:.ts=tsx --define:process.env.NODE_ENV='\"production\"'",
+    "start": "node server.js",
+    "dev": "npm run build && node server.js"
   },
   "dependencies": {
-    "react-dom": "^19.1.1",
+    "express": "^4.19.2",
     "@google/genai": "^1.14.0",
-    "react": "^19.1.1",
-    "lucide-react": "^0.539.0"
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "esbuild": "^0.21.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

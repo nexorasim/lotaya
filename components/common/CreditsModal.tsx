@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { UserContext } from '../../contexts/UserContext';
 import { X, CreditCard, ShoppingCart, TrendingUp, TrendingDown, ArrowLeft } from 'lucide-react';
+import Spinner from './Spinner';
 
 interface CreditsModalProps {
   isOpen: boolean;
@@ -16,13 +17,21 @@ const CREDIT_PACKAGES = [
 const CreditsModal: React.FC<CreditsModalProps> = ({ isOpen, onClose }) => {
   const { user, transactions, topUpCredits } = useContext(UserContext);
   const [selectedPackage, setSelectedPackage] = useState<{credits: number, price: number} | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!isOpen || !user) return null;
 
-  const handleTopUp = () => {
+  const handleTopUp = async () => {
     if (selectedPackage) {
-        topUpCredits(selectedPackage.credits);
-        setSelectedPackage(null); // Go back to main view
+        setIsProcessing(true);
+        try {
+            await topUpCredits(selectedPackage.credits);
+            setSelectedPackage(null); // Go back to main view on success
+        } catch(error) {
+            console.error("Failed to top up credits", error);
+        } finally {
+            setIsProcessing(false);
+        }
     }
   };
   
@@ -116,8 +125,8 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ isOpen, onClose }) => {
                         Continue with Google Pay
                      </button>
                  </div>
-                 <button onClick={handleTopUp} className="w-full mt-8 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition-colors">
-                    Confirm Purchase
+                 <button onClick={handleTopUp} disabled={isProcessing} className="w-full mt-8 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                    {isProcessing ? <><Spinner size="h-5 w-5" /> Processing...</> : 'Confirm Purchase'}
                  </button>
             </div>
         )}

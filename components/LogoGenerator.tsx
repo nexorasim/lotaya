@@ -72,13 +72,13 @@ const LogoGenerator: React.FC = () => {
     const prompt = `A modern, sleek, and professional vector logo for a company named '${businessName}'. The logo is for the ${industry} industry. The style should be ${fontStyle}. The logo should be an icon, simple, on a clean, solid color background, suitable for branding.`;
 
     try {
+      await deductCredits(CREDITS_COST.LOGO_GENERATION, 'Logo Generation');
       const imageBytesArray = await geminiService.generateLogos(prompt);
       const generatedLogos = imageBytesArray.map((bytes, index) => ({
         id: `logo-${Date.now()}-${index}`,
         base64: bytes,
       }));
       setLogos(generatedLogos);
-      deductCredits(CREDITS_COST.LOGO_GENERATION);
     } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
         setError(errorMessage);

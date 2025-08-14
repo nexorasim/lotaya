@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { UserContext } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
 import { X, Mail, Lock } from 'lucide-react';
+import Spinner from './Spinner';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -13,21 +14,34 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { login } = useContext(UserContext);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, signup } = useContext(UserContext);
   const { showToast } = useToast();
 
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (activeTab === 'signup' && password !== confirmPassword) {
       showToast("Passwords do not match.", "error");
       return;
     }
-    // In a real app, you'd have different logic for signin/signup
-    login(email);
-    onClose();
+    
+    setIsLoading(true);
+    try {
+      if (activeTab === 'signin') {
+        await login(email, password);
+      } else {
+        await signup(email, password);
+      }
+      handleClose();
+    } catch (error) {
+      // Error toast is already shown by the context's apiCall helper
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -76,8 +90,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors !mt-6">
-            {activeTab === 'signin' ? 'Sign In' : 'Create Account'}
+          <button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors !mt-6 flex items-center justify-center gap-2">
+            {isLoading ? <Spinner size="h-5 w-5" /> : null}
+            {isLoading ? 'Processing...' : (activeTab === 'signin' ? 'Sign In' : 'Create Account')}
           </button>
         </form>
 

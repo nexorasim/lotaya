@@ -83,6 +83,7 @@ const SocialMediaAssistant: React.FC = () => {
     setContent(null);
 
     try {
+      await deductCredits(CREDITS_COST.SOCIAL_POST_GENERATION, `Social Post: ${selectedTemplate}`);
       const templateDetails = SOCIAL_TEMPLATES[selectedTemplate as keyof typeof SOCIAL_TEMPLATES];
       const imagePrompt = `A high-quality, visually appealing background image for a social media post. The theme is: "${designIdea}". The image should be suitable for a ${selectedTemplate}. Aspect ratio should be ${templateDetails.aspectRatio}. No text on the image. Photorealistic.`;
       
@@ -96,7 +97,6 @@ const SocialMediaAssistant: React.FC = () => {
         caption: textData.caption,
         hashtags: textData.hashtags
       });
-      deductCredits(CREDITS_COST.SOCIAL_POST_GENERATION);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';

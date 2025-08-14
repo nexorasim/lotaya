@@ -41,9 +41,9 @@ const BusinessTemplates: React.FC = () => {
     setIdea(null);
 
     try {
+      await deductCredits(CREDITS_COST.TEMPLATE_IDEA_GENERATION, `Template Idea: ${templateType}`);
       const result = await geminiService.generateTemplateIdea(description, templateType);
       setIdea(result);
-      deductCredits(CREDITS_COST.TEMPLATE_IDEA_GENERATION);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(errorMessage);

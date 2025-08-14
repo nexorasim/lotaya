@@ -1,89 +1,109 @@
-import React, { createContext, useState, ReactNode, useCallback, useContext } from 'react';
-import { User, Transaction } from '../types';
+import React, { createContext, useState, ReactNode, useCallback, useContext, useEffect } from 'react';
+import { User, Transaction, UserContextType } from '../types';
 import { useToast } from './ToastContext';
-
-interface UserContextType {
-  user: User | null;
-  transactions: Transaction[];
-  login: (email: string) => void;
-  logout: () => void;
-  deductCredits: (amount: number) => void;
-  topUpCredits: (amount: number) => void;
-  isAuthModalOpen: boolean;
-  setIsAuthModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  isCreditsModalOpen: boolean;
-  setIsCreditsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-// Mock initial data
-const MOCK_USER: User = {
-  name: 'Demo User',
-  email: 'demo@lotaya.ai',
-  credits: 100,
-};
-
-const MOCK_TRANSACTIONS: Transaction[] = [
-    { id: 't1', date: '2024-07-21', description: 'Initial Credit Grant', amount: 50},
-    { id: 't2', date: '2024-07-22', description: 'Logo Generation', amount: -4},
-    { id: 't3', date: '2024-07-23', description: 'Social Media Post', amount: -2},
-];
 
 export const UserContext = createContext<UserContextType>({} as UserContextType);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // Manages initial session loading state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false);
   const { showToast } = useToast();
 
-  const login = (email: string) => {
-    // In a real app, this would be an API call
-    const newUser = { ...MOCK_USER, email };
-    setUser(newUser);
-    setTransactions(MOCK_TRANSACTIONS);
-    showToast(`Welcome back, ${newUser.name}!`, 'success');
+  const apiCall = async <T,>(endpoint: string, method: string, body?: any): Promise<T> => {
+    try {
+        const response = await fetch(endpoint, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: body ? JSON.stringify(body) : undefined
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: `Request failed with status ${response.status}` }));
+            throw new Error(errorData.message);
+        }
+        return response.status === 204 ? ({} as T) : await response.json();
+    } catch(err) {
+        const message = err instanceof Error ? err.message : 'Failed to connect to the server.';
+        showToast(message, 'error');
+        throw err;
+    }
   };
 
-  const logout = () => {
+  const fetchTransactions = useCallback(async () => {
+    if (!user) return;
+    try {
+        const data = await apiCall<Transaction[]>('/api/transactions', 'GET');
+        setTransactions(data);
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+    }
+  }, [user]);
+
+  const handleAuthSuccess = useCallback((userData: User) => {
+    setUser(userData);
+    fetchTransactions();
+    showToast(`Welcome back, ${userData.name}!`, 'success');
+  }, [fetchTransactions, showToast]);
+
+  const checkSession = useCallback(async () => {
+    try {
+      const userData = await apiCall<User>('/api/auth/session', 'GET');
+      handleAuthSuccess(userData);
+    } catch (error) {
+      console.log("No active session or server not available.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [handleAuthSuccess]);
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
+
+  const signup = async (email: string, password: string) => {
+    const userData = await apiCall<User>('/api/auth/signup', 'POST', { email, password });
+    handleAuthSuccess(userData);
+    setIsAuthModalOpen(false);
+  };
+  
+  const login = async (email: string, password: string) => {
+    const userData = await apiCall<User>('/api/auth/login', 'POST', { email, password });
+    handleAuthSuccess(userData);
+    setIsAuthModalOpen(false);
+  };
+
+  const logout = async () => {
+    await apiCall('/api/auth/logout', 'POST');
     setUser(null);
     setTransactions([]);
     showToast('You have been logged out.', 'info');
   };
 
-  const deductCredits = (amount: number) => {
-    if (!user) return;
-    const newCredits = user.credits - amount;
+  const deductCredits = async (amount: number, description: string) => {
+    if (!user) throw new Error("User not authenticated.");
+    const { newCredits, transaction } = await apiCall<{ newCredits: number; transaction: Transaction }>('/api/credits/deduct', 'POST', { amount, description });
     setUser({ ...user, credits: newCredits });
-    
-    const newTransaction: Transaction = {
-        id: `t${Date.now()}`,
-        date: new Date().toISOString().split('T')[0],
-        description: 'AI Service Usage',
-        amount: -amount
-    };
-    setTransactions(prev => [newTransaction, ...prev]);
-    showToast(`${amount} credits used.`, 'info');
+    setTransactions(prev => [transaction, ...prev]);
+    showToast(`${amount} credits used for ${description}.`, 'info');
   };
   
-  const topUpCredits = (amount: number) => {
-      if(!user) return;
-      setUser(prev => prev ? {...prev, credits: prev.credits + amount} : null);
-
-      const newTransaction: Transaction = {
-        id: `t${Date.now()}`,
-        date: new Date().toISOString().split('T')[0],
-        description: `Credit Top-Up`,
-        amount: amount
-    };
-    setTransactions(prev => [newTransaction, ...prev]);
-    showToast(`${amount} credits added successfully!`, 'success');
+  const topUpCredits = async (amount: number) => {
+      if(!user) throw new Error("User not authenticated.");
+      const { newCredits, transaction } = await apiCall<{ newCredits: number; transaction: Transaction }>('/api/credits/top-up', 'POST', { amount });
+      setUser(prev => prev ? {...prev, credits: newCredits} : null);
+      setTransactions(prev => [transaction, ...prev]);
+      showToast(`${amount} credits added successfully!`, 'success');
   };
 
   const value = {
     user,
+    isLoading,
     transactions,
     login,
+    signup,
     logout,
     deductCredits,
     topUpCredits,
